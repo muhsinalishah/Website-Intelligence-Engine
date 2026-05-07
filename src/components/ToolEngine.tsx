@@ -48,11 +48,24 @@ export const ToolEngine: React.FC<ToolEngineProps> = ({ toolId, onClose }) => {
         case 'case-converter':
           setOutput(`UPPER: ${input.toUpperCase()}\nlower: ${input.toLowerCase()}\nTitle: ${input.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}`);
           break;
+        case 'text-to-slug':
+          setOutput(input.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''));
+          break;
         case 'base64-encode':
           setOutput(btoa(input));
           break;
         case 'json-beautifier':
           setOutput(JSON.stringify(JSON.parse(input), null, 2));
+          break;
+        case 'sql-formatter':
+          // Basic keyword capitalization for "formatting"
+          const keywords = ["SELECT", "FROM", "WHERE", "INSERT", "INTO", "UPDATE", "SET", "DELETE", "JOIN", "ON", "GROUP BY", "ORDER BY"];
+          let formatted = input;
+          keywords.forEach(k => {
+            const regex = new RegExp(`\\b${k}\\b`, 'gi');
+            formatted = formatted.replace(regex, `\n${k}`);
+          });
+          setOutput(formatted.trim());
           break;
         case 'hex-rgb':
           const hex = input.replace('#', '');
@@ -62,10 +75,25 @@ export const ToolEngine: React.FC<ToolEngineProps> = ({ toolId, onClose }) => {
           setOutput(`rgb(${r}, ${g}, ${b})`);
           break;
         case 'binary-converter':
-          setOutput(input.split('').map(c => c.charCodeAt(0).toString(2)).join(' '));
+          setOutput(input.split('').map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' '));
+          break;
+        case 'binary-decimal':
+          setOutput(parseInt(input, 2).toString(10));
+          break;
+        case 'rgb-hex':
+          const match = input.match(/\d+/g);
+          if (match && match.length >= 3) {
+            const hexVal = "#" + match.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+            setOutput(hexVal.toUpperCase());
+          }
+          break;
+        case 'sci-calc':
+          setOutput(eval(input).toString()); // Simple eval for quick calc
+          break;
+        case 'md5-gen':
+          processAiTool(); // Hash generation is safer via AI in this limited env
           break;
         default:
-          setOutput("Logic not yet implemented for this specific utility. Defaulting to AI...");
           processAiTool();
       }
     } catch (e) {

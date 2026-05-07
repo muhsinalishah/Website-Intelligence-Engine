@@ -15,6 +15,15 @@ export interface AnalysisResult {
   lastChecked: string;
   healthScore?: number;
   aiInsights?: string;
+  performance?: {
+    fcp: number;
+    lcp: number;
+    cls: number;
+  };
+  dns?: {
+    provider: string;
+    ipv6: boolean;
+  };
 }
 
 export interface HistoryItem {
